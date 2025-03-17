@@ -126,6 +126,71 @@ app.layout = dbc.Container(children=[
                 ])
             ], style=tab_card)
         ], sm=12, lg=7)
+    ]),
+
+    # Row 2
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H3('Preço x Estado'),
+                    html.H6('Comparação temporal entre estados'),
+                    dbc.Row([
+                        dbc.Col([
+                            dcc.Dropdown(
+                                id='select-estados0',
+                                value=[df_main.at[df_main.index[3], 'ESTADO'], df_main.at[df_main.index[13], 'ESTADO'], df_main.at[df_main.index[6], 'ESTADO']],
+                                clearable=False,
+                                className='dbc',
+                                multi=True,
+                                options=[
+                                    {'label': x, 'value': x} for x in df_main['ESTADO'].unique()
+                                ]
+                            ),
+                        ], sm=10)
+                    ]),
+                    dbc.Row(
+                        dbc.Col([
+                            dcc.Graph(id='animation_graph', config={'displayModeBar': False, 'showTips': False})
+                        ])
+                    )
+                ])
+            ], style=tab_card)
+        ], sm=12, md=6, lg=5),
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    html.H3('Comparação Direta'),
+                    html.H6('Qual preço é menor é um dado período de tempo?'),
+                    dbc.Row([
+                        dbc.Col([
+                            dcc.Dropdown(
+                                id='select_estado1',
+                                value=df_main.at[df_main.index[3], 'ESTADO'],
+                                clearable=False,
+                                className='dbc',
+                                options=[
+                                    {'label': x, 'value': x} for x in df_main['ESTADO'].unique()
+                                ]
+                            )
+                        ], sm=10, md=5),
+                        dbc.Col([
+                            dcc.Dropdown(
+                                id='select_estado2',
+                                value=df_main.at[df_main.index[1], 'ESTADO'],
+                                clearable=False,
+                                className='dbc',
+                                options=[
+                                    {'label': x, 'value': x} for x in df_main['ESTADO'].unique()
+                                ]
+                            )
+                        ], sm=10, md=5),
+                    ], style={'margin-top': '20px'}, justify='center'),
+                    dcc.Graph(id='direct_comparison_graph', config={'displayModeBar': False, 'showTips': False}),
+                    html.P(id='desc_comparison', style={'color': 'gray', 'font-size': '80%'}),
+                ])
+            ], style=tab_card)
+        ], sm=12, md=6, lg=4)
     ])
 
 
