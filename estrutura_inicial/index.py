@@ -22,6 +22,8 @@ template_theme2 = "vapor"
 url_theme1 = dbc.themes.FLATLY
 url_theme2 = dbc.themes.VAPOR
 
+tab_card = {'height': '100%'}
+
 
 # ===== Reading n cleaning File ====== #
 df_main = pd.read_csv("data_gas.csv")
@@ -36,11 +38,95 @@ df_main = df_main[df_main.PRODUTO == 'GASOLINA COMUM']
 df_main = df_main.reset_index()
 df_main = df_main[['index', 'REGIÃO', 'ESTADO', 'VALOR REVENDA (R$/L)', 'DATA', 'ANO']]
 
+df_store = df_main.to_dict()
+
 # =========  Layout  =========== #
 app.layout = dbc.Container(children=[
-    
+    # Armazenar o dataset
+    dcc.Store(id='dataset', data=df_store),
+    dcc.Store(id='dataset_fixed', data=df_store),
 
-
+    # Layout
+    # Row 1
+    dbc.Row([
+        dbc.Col([
+            dbc.Card([
+                dbc.CardBody([
+                    dbc.Row([
+                        dbc.Col([
+                            html.Legend('Gas Price Analysis', style={'font-size': '18px'})
+                        ], sm=8),
+                        dbc.Col([
+                            html.I(className='fa fa-filter', style={'font-size': '200%'})
+                        ], sm=4, align='center')
+                        ]),
+                    dbc.Row([
+                        dbc.Col([
+                            ThemeSwitchAIO(aio_id='theme', themes=[url_theme1, url_theme2]),
+                            html.Legend('RSL BI & Analytics', style={'font-size': '18px'})
+                        ])
+                    ], style={'margin-top': '10px'}),
+                    dbc.Row([
+                        dbc.Col(
+                            dbc.Button('Visite nosso site', href='https://www.rslconsultoria.com/', target='_blank')
+                        )
+                    ], style={'margin-top': '10px'})
+                    ])
+                ], style=tab_card)
+            ], sm=4, lg=2),
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        dbc.Row([
+                            dbc.Col([
+                                html.H3('Máximos e Mínimos'),
+                                dcc.Graph(id='static-maxmmin', config={'displayModeBar': False, 'showTips': False})
+                            ])
+                        ])
+                    ])
+                ], style=tab_card)
+            ], sm=8, lg=3),
+            dbc.Col([
+                dbc.Card([
+                    dbc.CardBody([
+                        dbc.Row([
+                            dbc.Col([
+                                html.H6('Ano de Análise:'),
+                                dcc.Dropdown(
+                                    id='select-ano',
+                                    value=df_main.at[df_main.index[1], 'ANO'],
+                                    clearable=False,
+                                    className='dbc',
+                                    options=[
+                                        {'label': x, 'value': x} for x in df_main['ANO'].unique()
+                                    ]
+                                )
+                            ], sm=6),
+                            dbc.Col([
+                                html.H6('Região de Análise:'),
+                                dcc.Dropdown(
+                                    id='select-regiao',
+                                    value=df_main.at[df_main.index[1], 'REGIÃO'],
+                                    clearable=False,
+                                    className='dbc',
+                                    options=[
+                                        {'label': x, 'value': x} for x in df_main['REGIÃO'].unique()
+                                    ]
+                                )
+                        ], sm=6)
+                    ]),
+                    dbc.Row([
+                        dbc.Col([
+                            dcc.Graph(id='regiaobar_graph', config={'displayModeBar': False, 'showTips': False})
+                        ], sm=12, md=6),
+                    dbc.Col([
+                        dcc.Graph(id='estadobar_graph', config={'displayModeBar': False, 'showTips': False})
+                    ], sm=12, md=6)
+                    ], style={'column-gap': '0px'})
+                ])
+            ], style=tab_card)
+        ], sm=12, lg=7)
+    ])
 
 
 ], fluid=True, style={'height': '100%'})
