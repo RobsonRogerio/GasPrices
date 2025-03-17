@@ -25,9 +25,16 @@ url_theme2 = dbc.themes.VAPOR
 
 # ===== Reading n cleaning File ====== #
 df_main = pd.read_csv("data_gas.csv")
-
-
-
+df_main['DATA INICIAL'] = pd.to_datetime(df_main['DATA INICIAL'])
+df_main['DATA FINAL'] = pd.to_datetime(df_main['DATA FINAL'])
+df_main['DATA MEDIA'] = ((df_main['DATA FINAL'] - df_main['DATA INICIAL'])/2) + df_main['DATA INICIAL']
+df_main = df_main.sort_values(by='DATA MEDIA', ascending=True)
+df_main.rename(columns=  {'DATA MEDIA': 'DATA'}, inplace=True)
+df_main.rename(columns= {'PREÇO MÉDIO REVENDA': 'VALOR REVENDA (R$/L)'}, inplace=True)
+df_main['ANO'] = df_main['DATA'].apply(lambda x: str(x.year))
+df_main = df_main[df_main.PRODUTO == 'GASOLINA COMUM']
+df_main = df_main.reset_index()
+df_main = df_main[['index', 'REGIÃO', 'ESTADO', 'VALOR REVENDA (R$/L)', 'DATA', 'ANO']]
 
 # =========  Layout  =========== #
 app.layout = dbc.Container(children=[
