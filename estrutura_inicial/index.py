@@ -287,11 +287,34 @@ def func(data, toggle):
     return fig
 
 # callback indicator 2
+@app.callback(
+    Output('card2_indicators', 'figure'),
+    Input('dataset', 'data'),
+    Input('select_estado2', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value')
+)
+def card2(data, estado, toggle):
+    template = template_theme1 if toggle else template_theme2
 
+    dff = pd.DataFrame(data)
+    df_final = dff[dff['ESTADO'].isin([estado])]
 
+    data1 = str(int(dff['ANO'].min()) - 1)
+    data2 = dff['ANO'].max()
 
+    fig = go.Figure()
 
+    fig.add_trace(go.Indicator(
+        mode= 'number+delta',
+        title={'text': f"<span style='size:60%'>'{estado}</span><br><span style='font-size:0.7em'>{data1} - {data2}</span>"},
+        value=df_final.at[df_final.index[-1], 'VALOR REVENDA (R$/L)'],
+        number={'prefix': "R$", 'valueformat': '.2f'},
+        delta={'relative': True, 'valueformat': '.1%', 'reference': df_final.at[df_final.index[0], 'VALOR REVENDA (R$/L)']}  
+    ))
 
+    fig.update_layout(main_config, height=250, template=template)
+
+    return fig
 
 
 
