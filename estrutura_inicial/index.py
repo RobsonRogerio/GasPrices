@@ -107,7 +107,7 @@ app.layout = dbc.Container(children=[
                             dbc.Col([
                                 html.H6('Ano de Análise:'),
                                 dcc.Dropdown(
-                                    id='select-ano',
+                                    id='select_ano',
                                     value=df_main.at[df_main.index[1], 'ANO'],
                                     clearable=False,
                                     className='dbc',
@@ -119,7 +119,7 @@ app.layout = dbc.Container(children=[
                             dbc.Col([
                                 html.H6('Região de Análise:'),
                                 dcc.Dropdown(
-                                    id='select-regiao',
+                                    id='select_regiao',
                                     value=df_main.at[df_main.index[1], 'REGIÃO'],
                                     clearable=False,
                                     className='dbc',
@@ -152,7 +152,7 @@ app.layout = dbc.Container(children=[
                     dbc.Row([
                         dbc.Col([
                             dcc.Dropdown(
-                                id='select-estados0',
+                                id='select_estados0',
                                 value=[df_main.at[df_main.index[3], 'ESTADO'], df_main.at[df_main.index[13], 'ESTADO'], df_main.at[df_main.index[6], 'ESTADO']],
                                 clearable=False,
                                 className='dbc',
@@ -286,6 +286,64 @@ def func(data, toggle):
 
     return fig
 
+# callback barras horizontais
+@app.callback(
+    Output('regiaobar_graph', 'figure'),
+    Output('estadobar_graph', 'figure'),
+    Input('dataset_fixed', 'data'),
+    Input('select_ano', 'value'),
+    Input('select_regiao', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value')
+)
+def graph1(data, ano, regiao, toggle):
+    template = template_theme1 if toggle else template_theme2
+
+    df = pd.DataFrame(data)
+    df_filtered = df[df['ANO'].isin([ano])]
+
+    dff_regiao = df_filtered.groupby(['ANO', 'REGIÃO'])['VALOR REVENDA (R$/L)'].mean().reset_index()
+    dff_estado = df_filtered.groupby(['ANO', 'ESTADO', 'REGIÃO'])['VALOR REVENDA (R$/L)'].mean().reset_index()
+    dff_estado = dff_estado[dff_estado['REGIÃO'].isin([regiao])]
+
+    dff_regiao = dff_regiao.sort_values(by='VALOR REVENDA (R$/L)', ascending=True)
+    dff_estado = dff_estado.sort_values(by='VALOR REVENDA (R$/L)', ascending=True)
+
+    dff_regiao['VALOR REVENDA (R$/L)'] = dff_regiao['VALOR REVENDA (R$/L)'].round(decimals=2)
+    dff_estado['VALOR REVENDA (R$/L)'] = dff_estado['VALOR REVENDA (R$/L)'].round(decimals=2)
+
+    fig1_text = [f'{x} - R${y}' for x,y in zip(dff_regiao['REGIÃO'].unique(), dff_regiao['VALOR REVENDA (R$/L)'].unique())]
+    fig2_text = [f'R${y} - {x}' for x,y in zip(dff_estado['ESTADO'].unique(), dff_estado['VALOR REVENDA (R$/L)'].unique())]
+
+    fig1 = go.Figure(go.Bar(
+        x=dff_regiao['VALOR REVENDA (R$/L)'],
+        y=dff_regiao['REGIÃO'],
+        orientation='h',
+        text=fig1_text,
+        textposition='auto',
+        insidetextanchor='end',
+        insidetextfont=dict(family='Times', size=12)
+    ))
+    fig2 = go.Figure(go.Bar(
+        x=dff_estado['VALOR REVENDA (R$/L)'],
+        y=dff_estado['ESTADO'],
+        orientation='h',
+        text=fig2_text,
+        textposition='auto',
+        insidetextanchor='end',
+        insidetextfont=dict(family='Times', size=12)
+    ))
+
+    fig1.update_layout(main_config, yaxis={'showticklabels': False}, height=140, template=template)
+    fig2.update_layout(main_config, yaxis={'showticklabels': False}, height=140, template=template)
+
+    # range
+    fig1.update_layout(xaxis_range=[dff_regiao['VALOR REVENDA (R$/L)'].max(), dff_regiao['VALOR REVENDA (R$/L)'].min() - 0.15])
+    fig2.update_layout(xaxis_range=[dff_estado['VALOR REVENDA (R$/L)'].min() - 0.15, dff_estado['VALOR REVENDA (R$/L)'].max()])
+
+    return [fig1, fig2]
+
+
+
 # callback indicator 2
 @app.callback(
     Output('card2_indicators', 'figure'),
@@ -305,7 +363,7 @@ def card2(data, estado, toggle):
     fig = go.Figure()
 
     fig.add_trace(go.Indicator(
-        mode= 'number+delta',
+        mode='number+delta',
         title={'text': f"<span style='size:60%'>'{estado}</span><br><span style='font-size:0.7em'>{data1} - {data2}</span>"},
         value=df_final.at[df_final.index[-1], 'VALOR REVENDA (R$/L)'],
         number={'prefix': "R$", 'valueformat': '.2f'},
