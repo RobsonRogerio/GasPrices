@@ -126,7 +126,7 @@ app.layout = dbc.Container(children=[
                 ])
             ], style=tab_card)
         ], sm=12, lg=7)
-    ]),
+    ], className='g-2 my-auto'),
 
     # Row 2
     dbc.Row([
@@ -190,8 +190,28 @@ app.layout = dbc.Container(children=[
                     html.P(id='desc_comparison', style={'color': 'gray', 'font-size': '80%'}),
                 ])
             ], style=tab_card)
-        ], sm=12, md=6, lg=4)
-    ])
+        ], sm=12, md=6, lg=4),
+        dbc.Col([
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id='card_indicators', config={'displayModeBar': False, 'showTips': False}, style={'margin-top': '30px'})
+                        ])
+                    ], style=tab_card)
+                ])
+            ], justify='center', style={'padding-botton': '7px', 'height': '50%'}),
+            dbc.Row([
+                dbc.Col([
+                    dbc.Card([
+                        dbc.CardBody([
+                            dcc.Graph(id='card2_indicators', config={'displayModeBar': False, 'showTips': False}, style={'margin-top': '30px'})
+                        ])
+                    ], style=tab_card)
+                ])
+            ], justify='center', style={'height': '50%'}),
+        ], sm=12, lg=3, style={'height': '100%'})
+    ], className='g-2 my-auto')
 
 
 ], fluid=True, style={'height': '100%'})
