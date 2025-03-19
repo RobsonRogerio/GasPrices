@@ -392,7 +392,7 @@ def func(data, est1, est2, toggle):
     # Toda a linha
     fig.add_scattergl(name=est1, x=df_final['DATA'], y=df_final['VALOR REVENDA (R$/L)'])
 
-    # Abaixo de zero
+    # Diferenças maiores que zero
     fig.add_scattergl(name=est2, x=df_final['DATA'], y=df_final['VALOR REVENDA (R$/L)'].where(df_final['VALOR REVENDA (R$/L)'] > 0.0000))
 
     # updates
@@ -410,6 +410,18 @@ def func(data, est1, est2, toggle):
         ),
         align='center', bgcolor='rgba(0,0,0,0.5)', opacity=0.8,
         x=0.1, y=0.75, showarrow=False
+    )
+
+    fig.add_annotation(
+        text=f'{est1} mais barato',
+        xref='paper', yref='paper',
+        font=dict(
+            family='Courier New, monospace',
+            size=12,
+            color='#ffffff'
+        ),
+        align='center', bgcolor='rgba(0,0,0,0.5)', opacity=0.8,
+        x=0.1, y=0.25, showarrow=False
     )
 
     # definindo o texto
