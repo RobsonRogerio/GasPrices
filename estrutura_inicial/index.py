@@ -499,7 +499,7 @@ def card2(data, estado, toggle):
 )
 def range_slider(range, data):
     dff = pd.DataFrame(data)
-    dff = dff[(dff['ANO'] >= f'{range[0]}-01-01') & (dff['ANO'] <= f'{range[1]}-31-12')]
+    dff = dff[(dff['ANO'] >= str(range[0])) & (dff['ANO'] <= str(range[1]))]
     data = dff.to_dict()
 
     return data
