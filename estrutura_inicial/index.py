@@ -272,7 +272,7 @@ app.layout = dbc.Container(children=[
 def func(data, toggle):
     template = template_theme1 if toggle else template_theme2
 
-    dff = pd.DataFrame(df_store)
+    dff = pd.DataFrame(data)
     max = dff.groupby('ANO')['VALOR REVENDA (R$/L)'].max()
     min = dff.groupby('ANO')['VALOR REVENDA (R$/L)'].min()
 
@@ -343,7 +343,7 @@ def graph1(data, ano, regiao, toggle):
     return [fig1, fig2]
 
 
-# callback Preço x Estado
+# callback preço x estado - comparação temporal entre estados
 @app.callback(
     Output('animation_graph', 'figure'),
     Input('dataset', 'data'),
@@ -360,6 +360,62 @@ def animation(data, estados, toggle):
     fig.update_layout(main_config, height=425, xaxis_title=None)
     
     return fig
+
+# callback comparação direta
+@app.callback(
+        Output('direct_comparison_graph', 'figure'),
+        Output('desc_comparison', 'children'),
+        Input('dataset', 'data'),
+        Input('select_estado1', 'value'),
+        Input('select_estado2', 'value'),
+        Input(ThemeSwitchAIO.ids.switch('theme'), 'value')
+)
+def func(data, est1, est2, toggle):
+    template = template_theme1 if toggle else template_theme2
+
+    dff = pd.DataFrame(data)
+    df1 = dff[dff['ESTADO'].isin([est1])]
+    df2 = dff[dff['ESTADO'].isin([est2])]
+    df_final = pd.DataFrame()
+
+    df_estado1 = df1.groupby(pd.PeriodIndex(df1['DATA'], freq='M'))['VALOR REVENDA (R$/L)'].mean().reset_index()
+    df_estado2 = df2.groupby(pd.PeriodIndex(df2['DATA'], freq='M'))['VALOR REVENDA (R$/L)'].mean().reset_index()
+
+    df_estado1['DATA'] = pd.PeriodIndex(df_estado1['DATA'], freq='M')
+    df_estado2['DATA'] = pd.PeriodIndex(df_estado2['DATA'], freq='M')
+
+    df_final['DATA'] = df_estado1['DATA'].astype('datetime64[ns]')
+    df_final['VALOR REVENDA (R$/L)'] = df_estado1['VALOR REVENDA (R$/L)'] - df_estado2['VALOR REVENDA (R$/L)']
+
+    fig = go.Figure()
+
+    # Toda a linha
+    fig.add_scattergl(name=est1, x=df_final['DATA'], y=df_final['VALOR REVENDA (R$/L)'])
+
+    # Abaixo de zero
+    fig.add_scattergl(name=est2, x=df_final['DATA'], y=df_final['VALOR REVENDA (R$/L)'].where(df_final['VALOR REVENDA (R$/L)'] > 0.0000))
+
+    # updates
+    fig.update_layout(main_config, height=350, template=template)
+    fig.update_yaxes(range=[-0.7,0.7])
+
+    # annotations para exibir o valor mais barato
+    fig.add_annotation(
+        text=f'{est2} mais barato',
+        xref='paper', yref='paper',
+        font=dict(
+            family='Courier New, monospace',
+            size=12,
+            color='#ffffff'
+        ),
+        align='center', bgcolor='rgba(0,0,0,0.5)', opacity=0.8,
+        x=0.1, y=0.75, showarrow=False
+    )
+
+    # definindo o texto
+    text=f'Comparando {est1} e {est2}. Caso a linha esteja acima do eixo 0 {est2} tem o menor valor, caso contrário, {est1} tem o menor valor'
+
+    return [fig, text]
 
 
 # callback indicator 2
