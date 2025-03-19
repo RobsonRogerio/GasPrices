@@ -214,7 +214,7 @@ app.layout = dbc.Container(children=[
                         ])
                     ], style=tab_card)
                 ])
-            ], justify='center', style={'padding-botton': '7px', 'height': '50%'}),
+            ], justify='center', style={'padding-botton': '7px', 'height': '30%'}),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
@@ -223,7 +223,7 @@ app.layout = dbc.Container(children=[
                         ])
                     ], style=tab_card)
                 ])
-            ], justify='center', style={'height': '50%'}),
+            ], justify='center', style={'height': '30%'}),
         ], sm=12, lg=3, style={'height': '100%'})
     ], className='g-2 my-auto'),
 
@@ -428,6 +428,37 @@ def func(data, est1, est2, toggle):
     text=f'Comparando {est1} e {est2}. Caso a linha esteja acima do eixo 0 {est2} tem o menor valor, caso contrário, {est1} tem o menor valor'
 
     return [fig, text]
+
+
+# callback indicator 1
+@app.callback(
+    Output('card_indicators', 'figure'),
+    Input('dataset', 'data'),
+    Input('select_estado1', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value')
+)
+def card2(data, estado, toggle):
+    template = template_theme1 if toggle else template_theme2
+
+    dff = pd.DataFrame(data)
+    df_final = dff[dff['ESTADO'].isin([estado])]
+
+    data1 = str(int(dff['ANO'].min()) - 1)
+    data2 = dff['ANO'].max()
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Indicator(
+        mode='number+delta',
+        title={'text': f"<span style='size:60%'>'{estado}</span><br><span style='font-size:0.7em'>{data1} - {data2}</span>"},
+        value=df_final.at[df_final.index[-1], 'VALOR REVENDA (R$/L)'],
+        number={'prefix': "R$", 'valueformat': '.2f'},
+        delta={'relative': True, 'valueformat': '.1%', 'reference': df_final.at[df_final.index[0], 'VALOR REVENDA (R$/L)']}  
+    ))
+
+    fig.update_layout(main_config, height=250, template=template)
+
+    return fig
 
 
 # callback indicator 2
