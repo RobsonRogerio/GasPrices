@@ -343,6 +343,24 @@ def graph1(data, ano, regiao, toggle):
     return [fig1, fig2]
 
 
+# callback Preço x Estado
+@app.callback(
+    Output('animation_graph', 'figure'),
+    Input('dataset', 'data'),
+    Input('select_estados0', 'value'),
+    Input(ThemeSwitchAIO.ids.switch('theme'), 'value')    
+)
+def animation(data, estados, toggle):
+    template = template_theme1 if toggle else template_theme2
+
+    dff = pd.DataFrame(data)
+    mask = dff['ESTADO'].isin(estados)
+    fig = px.line(dff[mask], x='DATA', y='VALOR REVENDA (R$/L)', color='ESTADO', template=template)
+
+    fig.update_layout(main_config, height=425, xaxis_title=None)
+    
+    return fig
+
 
 # callback indicator 2
 @app.callback(
