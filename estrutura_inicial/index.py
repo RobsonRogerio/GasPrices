@@ -59,6 +59,7 @@ app.layout = dbc.Container(children=[
     # Armazenar o dataset
     dcc.Store(id='dataset', data=df_store),
     dcc.Store(id='dataset_fixed', data=df_store),
+    dcc.Store(id='controller', data={'play': False}),
 
     # Layout
     # Row 1
@@ -133,9 +134,9 @@ app.layout = dbc.Container(children=[
                         dbc.Col([
                             dcc.Graph(id='regiaobar_graph', config={'displayModeBar': False, 'showTips': False})
                         ], sm=12, md=6),
-                    dbc.Col([
-                        dcc.Graph(id='estadobar_graph', config={'displayModeBar': False, 'showTips': False})
-                    ], sm=12, md=6)
+                        dbc.Col([
+                            dcc.Graph(id='estadobar_graph', config={'displayModeBar': False, 'showTips': False})
+                        ], sm=12, md=6)
                     ], style={'column-gap': '0px'})
                 ])
             ], style=tab_card)
@@ -210,20 +211,21 @@ app.layout = dbc.Container(children=[
                 dbc.Col([
                     dbc.Card([
                         dbc.CardBody([
-                            dcc.Graph(id='card_indicators', config={'displayModeBar': False, 'showTips': False}, style={'margin-top': '30px'})
+                            dcc.Graph(id='card_indicators', config={'displayModeBar': False, 'showTips': False}, style={'margin-top': '10px'})
                         ])
                     ], style=tab_card)
                 ])
-            ], justify='center', style={'padding-botton': '7px', 'height': '30%'}),
+            ], justify='center', style={'padding-botton': '7px', 'height': '50%'}),
+            html.Br(),
             dbc.Row([
                 dbc.Col([
                     dbc.Card([
                         dbc.CardBody([
-                            dcc.Graph(id='card2_indicators', config={'displayModeBar': False, 'showTips': False}, style={'margin-top': '30px'})
+                            dcc.Graph(id='card2_indicators', config={'displayModeBar': False, 'showTips': False}, style={'margin-top': '10px'})
                         ])
                     ], style=tab_card)
                 ])
-            ], justify='center', style={'height': '30%'}),
+            ], justify='center', style={'height': '50%'}),
         ], sm=12, lg=3, style={'height': '100%'})
     ], className='g-2 my-auto'),
 
@@ -251,7 +253,7 @@ app.layout = dbc.Container(children=[
                     )
                 ], sm=12, md=10, style={'margin-top': '15px'}),
                 # componente invisível
-                dcc.Interval(id='interval', interval=2000)
+                dcc.Interval(id='interval', interval=200000)
                 ], className='g-1', style={'height': '20%', 'justify-content': 'center'})
             ], style=tab_card)
         ])
@@ -503,6 +505,38 @@ def range_slider(range, data):
     data = dff.to_dict()
 
     return data
+
+# Play & Pause
+@app.callback(
+    Output('rangeslider', 'value'),
+    Output('controller', 'data'),
+
+    Input('interval', 'n_intervals'),
+    Input('play-button', 'n_clicks'),
+    Input('stop-button', 'n_clicks'),
+
+    State('rangeslider', 'value'),
+    State('controller', ' data'),
+    prevent_inicial_callbacks = True
+)
+def controller(n_intervals, play, stop, rangeslider, controller):
+    trigg = dash.callback_context.triggered[0]['prop_id']
+
+    if ('play-button' in trigg and not controller['play']):
+        if not controller['play']:
+            controller['play'] = True
+            range_slider[1] = 2007
+
+    elif 'stop-button' in trigg:
+        if controller['play']:
+            controller['play'] = False
+    
+    if controller['play']:
+        if rangeslider[1] == 2021:
+            controller['play'] = False
+        rangeslider[1] += 1 if rangeslider[1] < 2021 else 0
+
+    return rangeslider, controller
 
 # Run server
 if __name__ == '__main__':
