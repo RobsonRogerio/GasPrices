@@ -253,7 +253,7 @@ app.layout = dbc.Container(children=[
                     )
                 ], sm=12, md=10, style={'margin-top': '15px'}),
                 # componente invisível
-                dcc.Interval(id='interval', interval=200000)
+                dcc.Interval(id='interval', interval=20000000)
                 ], className='g-1', style={'height': '20%', 'justify-content': 'center'})
             ], style=tab_card)
         ])
@@ -516,7 +516,7 @@ def range_slider(range, data):
     Input('stop-button', 'n_clicks'),
 
     State('rangeslider', 'value'),
-    State('controller', ' data'),
+    State('controller', 'data'),
     prevent_inicial_callbacks = True
 )
 def controller(n_intervals, play, stop, rangeslider, controller):
@@ -525,14 +525,14 @@ def controller(n_intervals, play, stop, rangeslider, controller):
     if ('play-button' in trigg and not controller['play']):
         if not controller['play']:
             controller['play'] = True
-            range_slider[1] = 2007
+            rangeslider[1] = 2005
 
     elif 'stop-button' in trigg:
         if controller['play']:
             controller['play'] = False
     
     if controller['play']:
-        if rangeslider[1] == 2021:
+        if rangeslider[0] == 2021:
             controller['play'] = False
         rangeslider[1] += 1 if rangeslider[1] < 2021 else 0
 
